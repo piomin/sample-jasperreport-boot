@@ -1,8 +1,8 @@
 package pl.piomin.jasperreport.controller;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,8 +29,6 @@ import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.fill.JRFileVirtualizer;
 import net.sf.jasperreports.engine.fill.JRSwapFileVirtualizer;
-import net.sf.jasperreports.engine.util.JRLoader;
-import net.sf.jasperreports.engine.util.JRSwapFile;
 import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 
@@ -40,22 +38,23 @@ public class JasperController {
 	protected Logger logger = Logger.getLogger(JasperController.class.getName());
 	public static int count = 0;
 	
-	JasperReport jasperReport;
+
 	JRFileVirtualizer fv;
 	JRSwapFileVirtualizer sfv;
 	
 	@Autowired
 	DataSource datasource;
+	@Autowired
+	JasperReport jasperReport;
 	
 	public JasperController() {
-		try {
-			jasperReport = (JasperReport)JRLoader.loadObject(new File("employeeReport.jasper"));
-			fv = new JRFileVirtualizer(20, "C:\\Users\\Piotr\\pdf");
-			JRSwapFile sf = new JRSwapFile("C:\\Users\\Piotr\\pdf", 1024, 100);
-			sfv = new JRSwapFileVirtualizer(20, sf, true);
-		} catch (JRException e) {
-			e.printStackTrace();
-		}
+//		try {
+			fv = new JRFileVirtualizer(100, "C:\\Users\\Piotr\\pdf");
+//			JRSwapFile sf = new JRSwapFile("C:\\Users\\Piotr\\pdf", 1024, 100);
+//			sfv = new JRSwapFileVirtualizer(20, sf, true);
+//		} catch (JRException e) {
+//			e.printStackTrace();
+//		}
 	}
 	
 	@ResponseBody
@@ -65,16 +64,17 @@ public class JasperController {
 //		JRFileVirtualizer fv = new JRFileVirtualizer(20, "C:\\Users\\Piotr\\pdf");
 //		JRSwapFile sf = new JRSwapFile("directory", 1024, 100);
 //		JRSwapFileVirtualizer sfv = new JRSwapFileVirtualizer(50, sf, true);
-//		JasperReport jasperReport = (JasperReport)JRLoader.loadObject(new File("employeeReport.jasper"));
-//		JasperReport jasperReport = JasperCompileManager.compileReport("src/main/resources/report.jrxml");
 		Map<String, Object> m = new HashMap<>();
-		m.put(JRParameter.REPORT_VIRTUALIZER, sfv);
+		m.put(JRParameter.REPORT_VIRTUALIZER, fv);
 		m.put("age", age);
-		JasperPrint p = JasperFillManager.fillReport(jasperReport, m, datasource.getConnection());
+		Connection cc = datasource.getConnection();
+		JasperPrint p = JasperFillManager.fillReport(jasperReport, m, cc);
+		cc.close();
+		
 //		JRSaver.saveObject(jasperReport, "employeeReport.jasper");
 		JRPdfExporter exporter = new JRPdfExporter();
 		
-		String name = ++count + "employeeReport.pdf";
+		String name = ++count + "personReport.pdf";
 		SimpleOutputStreamExporterOutput c = new SimpleOutputStreamExporterOutput(name);
 		exporter.setExporterInput(new SimpleExporterInput(p));
 		exporter.setExporterOutput(c);

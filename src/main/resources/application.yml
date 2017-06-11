@@ -9,4 +9,5 @@ spring:
     username: datagrid
     password: datagrid
     tomcat:
+      initial-size: 20
       max-active: 30
