@@ -1,0 +1,12 @@
+server:  
+  port: ${PORT:2222}
+
+spring:  
+  application:
+    name: jasper-service
+  datasource:
+    url: jdbc:mysql://192.168.99.100:33306/datagrid?useSSL=false
+    username: datagrid
+    password: datagrid
+    tomcat:
+      max-active: 30
