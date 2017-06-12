@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,7 @@ import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.fill.JRFileVirtualizer;
 import net.sf.jasperreports.engine.fill.JRSwapFileVirtualizer;
+import net.sf.jasperreports.engine.util.JRSwapFile;
 import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 
@@ -38,8 +40,9 @@ public class JasperController {
 	
 	@Autowired
 	JRFileVirtualizer fv;
-	@Autowired
-	JRSwapFileVirtualizer sfv;
+	@Value("${directory}")
+	private String directory;
+	
 	@Autowired
 	DataSource datasource;
 	@Autowired
@@ -70,6 +73,8 @@ public class JasperController {
 	@RequestMapping(value = "/pdf/sfv/{age}")
 	public ResponseEntity<InputStreamResource> getReportSfv(@PathVariable("age") int age) {
 		logger.info("getReportSfv(" + age + ")");
+		JRSwapFile sf = new JRSwapFile(directory, 1024, 100);
+		JRSwapFileVirtualizer sfv = new JRSwapFileVirtualizer(20, sf, true);
 		Map<String, Object> m = new HashMap<>();
 		m.put(JRParameter.REPORT_VIRTUALIZER, sfv);
 		m.put("age", age);
@@ -99,7 +104,6 @@ public class JasperController {
 			e.printStackTrace();
 		} finally {
 			fv.cleanup();
-			sfv.cleanup();
 			if (cc != null)
 				try {
 					cc.close();

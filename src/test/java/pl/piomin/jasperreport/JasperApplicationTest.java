@@ -18,7 +18,7 @@ public class JasperApplicationTest {
 	TestRestTemplate template = new TestRestTemplate();
 	
 	@Test
-	public void testFindByNumber() throws InterruptedException {
+	public void testGetReport() throws InterruptedException {
 		List<HttpStatus> responses = new ArrayList<>();
 		Random r = new Random();
 		int i = 0;
