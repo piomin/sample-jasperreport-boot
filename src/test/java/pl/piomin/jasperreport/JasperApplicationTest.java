@@ -29,7 +29,7 @@ public class JasperApplicationTest {
 				public void run() {
 					int age = r.nextInt(99);
 					long start = System.currentTimeMillis();
-					ResponseEntity<InputStreamResource> res = template.getForEntity("http://localhost:2222/pdf/{age}", InputStreamResource.class, age);
+					ResponseEntity<InputStreamResource> res = template.getForEntity("http://localhost:2222/pdf/fv/{age}", InputStreamResource.class, age);
 					logger.info("Response (" +  (System.currentTimeMillis()-start) + "): " + res.getStatusCode());
 					responses.add(res.getStatusCode());
 					try {

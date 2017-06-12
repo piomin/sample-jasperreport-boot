@@ -1,7 +1,6 @@
 package pl.piomin.jasperreport.controller;
 
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -38,58 +36,77 @@ public class JasperController {
 	protected Logger logger = Logger.getLogger(JasperController.class.getName());
 	public static int count = 0;
 	
-
+	@Autowired
 	JRFileVirtualizer fv;
+	@Autowired
 	JRSwapFileVirtualizer sfv;
-	
 	@Autowired
 	DataSource datasource;
 	@Autowired
 	JasperReport jasperReport;
 	
-	public JasperController() {
-//		try {
-			fv = new JRFileVirtualizer(100, "C:\\Users\\Piotr\\pdf");
-//			JRSwapFile sf = new JRSwapFile("C:\\Users\\Piotr\\pdf", 1024, 100);
-//			sfv = new JRSwapFileVirtualizer(20, sf, true);
-//		} catch (JRException e) {
-//			e.printStackTrace();
-//		}
+	@ResponseBody
+	@RequestMapping(value = "/pdf/{age}")
+	public ResponseEntity<InputStreamResource> getReport(@PathVariable("age") int age) {
+		logger.info("getReport(" + age + ")");
+		Map<String, Object> m = new HashMap<>();
+		m.put("age", age);	
+		String name = ++count + "personReport.pdf";
+		return generateReport(name, m);
 	}
 	
 	@ResponseBody
-	@RequestMapping(value = "/pdf/{age}")
-	public ResponseEntity<InputStreamResource> getReport(@PathVariable("age") int age) throws JRException, SQLException, IOException {
-		logger.info("getReport(" + age + ")");
-//		JRFileVirtualizer fv = new JRFileVirtualizer(20, "C:\\Users\\Piotr\\pdf");
-//		JRSwapFile sf = new JRSwapFile("directory", 1024, 100);
-//		JRSwapFileVirtualizer sfv = new JRSwapFileVirtualizer(50, sf, true);
+	@RequestMapping(value = "/pdf/fv/{age}")
+	public ResponseEntity<InputStreamResource> getReportFv(@PathVariable("age") int age) {
+		logger.info("getReportFv(" + age + ")");
 		Map<String, Object> m = new HashMap<>();
 		m.put(JRParameter.REPORT_VIRTUALIZER, fv);
 		m.put("age", age);
-		Connection cc = datasource.getConnection();
-		JasperPrint p = JasperFillManager.fillReport(jasperReport, m, cc);
-		cc.close();
-		
-//		JRSaver.saveObject(jasperReport, "employeeReport.jasper");
-		JRPdfExporter exporter = new JRPdfExporter();
-		
 		String name = ++count + "personReport.pdf";
-		SimpleOutputStreamExporterOutput c = new SimpleOutputStreamExporterOutput(name);
-		exporter.setExporterInput(new SimpleExporterInput(p));
-		exporter.setExporterOutput(c);
-		exporter.exportReport();
-		
-		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.setContentType(MediaType.valueOf("application/pdf"));
-		responseHeaders.setContentDispositionFormData("attachment", name);
-		FileInputStream st = new FileInputStream(name);
-		responseHeaders.setContentLength(st.available());
-	    InputStreamResource isr = new InputStreamResource(st);
-	    
-//	    if (fv != null) fv.cleanup();
-	    
-	    return new ResponseEntity<InputStreamResource>(isr, responseHeaders, HttpStatus.OK);
+		return generateReport(name, m);
 	}
 	
+	@ResponseBody
+	@RequestMapping(value = "/pdf/sfv/{age}")
+	public ResponseEntity<InputStreamResource> getReportSfv(@PathVariable("age") int age) {
+		logger.info("getReportSfv(" + age + ")");
+		Map<String, Object> m = new HashMap<>();
+		m.put(JRParameter.REPORT_VIRTUALIZER, sfv);
+		m.put("age", age);
+		String name = ++count + "personReport.pdf";
+		return generateReport(name, m);
+	}
+	
+	private ResponseEntity<InputStreamResource> generateReport(String name, Map<String, Object> params) {
+		FileInputStream st = null;
+		Connection cc = null;
+		try {
+			cc = datasource.getConnection();
+			JasperPrint p = JasperFillManager.fillReport(jasperReport, params, cc);
+			JRPdfExporter exporter = new JRPdfExporter();
+			SimpleOutputStreamExporterOutput c = new SimpleOutputStreamExporterOutput(name);
+			exporter.setExporterInput(new SimpleExporterInput(p));
+			exporter.setExporterOutput(c);
+			exporter.exportReport();
+			
+			st = new FileInputStream(name);
+			HttpHeaders responseHeaders = new HttpHeaders();
+			responseHeaders.setContentType(MediaType.valueOf("application/pdf"));
+			responseHeaders.setContentDispositionFormData("attachment", name);
+			responseHeaders.setContentLength(st.available());
+		    return new ResponseEntity<InputStreamResource>(new InputStreamResource(st), responseHeaders, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			fv.cleanup();
+			sfv.cleanup();
+			if (cc != null)
+				try {
+					cc.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+		}
+		return null;
+	}
 }
