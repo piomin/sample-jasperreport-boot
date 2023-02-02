@@ -4,10 +4,12 @@ server:
 spring:  
   application:
     name: jasper-service
-  datasource:
-    url: jdbc:mysql://192.168.99.100:33306/datagrid?useSSL=false
-    username: datagrid
-    password: datagrid
-    tomcat:
-      initial-size: 20
-      max-active: 30
+#  datasource:
+#    url: jdbc:mysql://192.168.99.100:33306/datagrid?useSSL=false
+#    username: datagrid
+#    password: datagrid
+#    tomcat:
+#      initial-size: 20
+#      max-active: 30
+
+directory: ./
