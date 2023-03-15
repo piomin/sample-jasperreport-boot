@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -25,7 +26,7 @@ public class JasperApplicationTest {
 	
 	@Test
 	void testGetReport() throws InterruptedException {
-		List<HttpStatus> responses = new ArrayList<>();
+		List<HttpStatusCode> responses = new ArrayList<>();
 		Random r = new Random();
 		int i = 0;
 

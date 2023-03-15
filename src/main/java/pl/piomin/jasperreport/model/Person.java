@@ -1,10 +1,10 @@
 package pl.piomin.jasperreport.model;
 
-import java.io.Serializable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import java.io.Serializable;
 
 @Entity
 public class Person implements Serializable {
