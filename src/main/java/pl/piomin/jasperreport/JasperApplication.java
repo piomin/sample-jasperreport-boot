@@ -19,35 +19,35 @@ import net.sf.jasperreports.engine.util.JRSwapFile;
 @SpringBootApplication
 public class JasperApplication {
 
-	@Value("${directory}")
-	private String directory;
-	
-	public static void main(String[] args) {
-		SpringApplication.run(JasperApplication.class, args);
-	}
+    @Value("${directory}")
+    private String directory;
 
-	@Bean
-	JasperReport report() throws JRException {
-		JasperReport jr = null;
-		File f = new File("personReport.jasper");
-		if (f.exists()) {
-			jr = (JasperReport) JRLoader.loadObject(f);
-		} else {
-			jr = JasperCompileManager.compileReport("src/main/resources/report.jrxml");
-			JRSaver.saveObject(jr, "personReport.jasper");
-		}
-		return jr;
-	}
-	
-	@Bean
-	JRFileVirtualizer fileVirtualizer() {
-		return new JRFileVirtualizer(100, directory);
-	}
-	
-	@Bean
-	JRSwapFileVirtualizer swapFileVirtualizer() {
-		JRSwapFile sf = new JRSwapFile(directory, 1024, 100);
-		return new JRSwapFileVirtualizer(20, sf, true);
-	}
-	
+    public static void main(String[] args) {
+        SpringApplication.run(JasperApplication.class, args);
+    }
+
+    @Bean
+    JasperReport report() throws JRException {
+        JasperReport jr = null;
+        File f = new File("personReport.jasper");
+        if (f.exists()) {
+            jr = (JasperReport) JRLoader.loadObject(f);
+        } else {
+            jr = JasperCompileManager.compileReport("src/main/resources/report.jrxml");
+            JRSaver.saveObject(jr, "personReport.jasper");
+        }
+        return jr;
+    }
+
+    @Bean
+    JRFileVirtualizer fileVirtualizer() {
+        return new JRFileVirtualizer(100, directory);
+    }
+
+    @Bean
+    JRSwapFileVirtualizer swapFileVirtualizer() {
+        JRSwapFile sf = new JRSwapFile(directory, 1024, 100);
+        return new JRSwapFileVirtualizer(20, sf, true);
+    }
+
 }
