@@ -1,11 +1,13 @@
 package pl.piomin.jasperreport;
 
 import java.io.File;
+import java.io.InputStream;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.ClassPathResource;
 
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
@@ -28,15 +30,19 @@ public class JasperApplication {
 
     @Bean
     JasperReport report() throws JRException {
-        JasperReport jr = null;
         File f = new File("personReport.jasper");
         if (f.exists()) {
-            jr = (JasperReport) JRLoader.loadObject(f);
-        } else {
-            jr = JasperCompileManager.compileReport("src/main/resources/report.jrxml");
-            JRSaver.saveObject(jr, "personReport.jasper");
+            return (JasperReport) JRLoader.loadObject(f);
         }
-        return jr;
+
+        ClassPathResource resource = new ClassPathResource("report.jrxml");
+        try (InputStream is = resource.getInputStream()) {
+            JasperReport jr = JasperCompileManager.compileReport(is);
+            JRSaver.saveObject(jr, "personReport.jasper");
+            return jr;
+        } catch (java.io.IOException e) {
+            throw new JRException("Failed to load report template", e);
+        }
     }
 
     @Bean
